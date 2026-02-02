@@ -1,0 +1,21 @@
+{
+	"name": "AzureSqlDatabaseTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDataWarehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Prop_0",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "TestFile"
+		}
+	}
+}
