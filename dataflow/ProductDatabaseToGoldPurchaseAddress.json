@@ -60,7 +60,7 @@
 				"     validateSchema: false,",
 				"     format: 'parquet',",
 				"     fileSystem: 'datalake',",
-				"     folderPath: 'Gold/ProductToDatabase/Product',",
+				"     folderPath: 'Gold/ProductToDatabase/PurchaseAddress',",
 				"     truncate: true,",
 				"     partitionFileNames:['PurchaseAddress.parquet'],",
 				"     umask: 0022,",
