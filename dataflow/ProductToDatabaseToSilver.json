@@ -1,0 +1,102 @@
+{
+	"name": "ProductToDatabaseToSilver",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "DataLake",
+						"type": "LinkedServiceReference"
+					},
+					"name": "SourceBronze"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "DataLake",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkToSilver"
+				}
+			],
+			"transformations": [
+				{
+					"name": "cast1"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "RemoveDuplicate"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          OrderID as string,",
+				"          Product as string,",
+				"          QuantityOrdered as string,",
+				"          PriceEach as string,",
+				"          OrderDate as string,",
+				"          PurchaseAddress as string,",
+				"          FileName as string,",
+				"          LoadDate as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet',",
+				"     fileSystem: 'datalake',",
+				"     wildcardPaths:['Bronze/ProductDatabase']) ~> SourceBronze",
+				"RemoveDuplicate cast(output(",
+				"          mycols as string,",
+				"          OrderID as integer,",
+				"          Product as string,",
+				"          PriceEach as float,",
+				"          OrderDate as timestamp 'MM/dd/yy HH:mm'",
+				"     ),",
+				"     errors: true) ~> cast1",
+				"SourceBronze filter(isInteger(OrderID)) ~> filter1",
+				"filter1 aggregate(groupBy(mycols = sha2(256,columns())),",
+				"     each(match(true()), $$ = first($$))) ~> RemoveDuplicate",
+				"cast1 derive(PurchaseAddress = at(split(PurchaseAddress,\",\"),1),",
+				"          PurchaseCity = at(split(PurchaseAddress,\",\"),2),",
+				"          State = at(split(trim(at(split(PurchaseAddress,\",\"),3)),' '),1),",
+				"          ZipCode = at(split(trim(at(split(PurchaseAddress,\",\"),3)),' '),2)) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          OrderID,",
+				"          Product,",
+				"          QuantityOrdered,",
+				"          PriceEach,",
+				"          OrderDate,",
+				"          PurchaseAddress,",
+				"          PurchaseCity,",
+				"          State,",
+				"          ZipCode,",
+				"          LoadDate,",
+				"          FileName",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     fileSystem: 'datalake',",
+				"     folderPath: 'Silver/ProductDatabase',",
+				"     truncate: true,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkToSilver"
+			]
+		}
+	}
+}
