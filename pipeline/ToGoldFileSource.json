@@ -1,5 +1,5 @@
 {
-	"name": "ProductDatabaseToGoldFileSource",
+	"name": "ToGoldFileSource",
 	"properties": {
 		"activities": [
 			{
