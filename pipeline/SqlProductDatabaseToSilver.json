@@ -1,0 +1,71 @@
+{
+	"name": "SqlProductDatabaseToSilver",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy To Sql",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"wildcardFolderPath": "Bronze/ProductDatabase",
+							"wildcardFileName": "*.parquet",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "drop table if exists Stage.SalesOrderTemp\nCreate Table Stage.SalesOrderTemp\n(OrderId varchar(max),\n Product varchar(max),\nQuantityOrdered varchar(max),\nPriceEach varchar(max),\nOrderDate varchar(max),\nPurchaseAddress varchar(max),\nFileName varchar(max),\nLoadDate varchar(max)\n)",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": true,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "AzureDatalakeParquet",
+						"type": "DatasetReference",
+						"parameters": {
+							"FolderPath": "Bronze/ProductDatabase"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzureSqlDatabaseTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"Schema": "Stage",
+							"TableName": "SalesOrderTemp"
+						}
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}
