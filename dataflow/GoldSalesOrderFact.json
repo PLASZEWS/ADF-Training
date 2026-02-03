@@ -1,5 +1,5 @@
 {
-	"name": " GoldSalesOrderFact",
+	"name": "GoldSalesOrderFact",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -151,7 +151,8 @@
 				"     preCommands: [],",
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sinkToGold"
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkToGold"
 			]
 		}
 	}
