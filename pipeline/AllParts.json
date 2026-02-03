@@ -83,7 +83,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": " GoldSalesOrderFact",
+						"referenceName": "GoldSalesOrderFact",
 						"type": "DataFlowReference"
 					},
 					"compute": {
