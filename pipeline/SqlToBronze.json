@@ -114,7 +114,7 @@
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "QuantityOrdered",
+									"name": "OrderDate",
 									"physicalType": "UTF8"
 								}
 							},
