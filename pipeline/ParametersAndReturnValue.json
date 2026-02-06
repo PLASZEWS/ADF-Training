@@ -1,0 +1,47 @@
+{
+	"name": "ParametersAndReturnValue",
+	"properties": {
+		"activities": [
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Result",
+					"value": {
+						"value": "@add(pipeline().parameters.SummandA,pipeline().parameters.SummandB)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SummandA": {
+				"type": "int"
+			},
+			"SummandB": {
+				"type": "int"
+			}
+		},
+		"variables": {
+			"a": {
+				"type": "Integer"
+			},
+			"b": {
+				"type": "Integer"
+			},
+			"Result": {
+				"type": "Integer"
+			}
+		},
+		"folder": {
+			"name": "ADF Example Pipes"
+		},
+		"annotations": []
+	}
+}
