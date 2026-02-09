@@ -1,0 +1,57 @@
+{
+	"name": "Ifthen",
+	"properties": {
+		"activities": [
+			{
+				"name": "If Positive Value",
+				"type": "IfCondition",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(variables('Input'),0)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Mesage",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "Message",
+								"value": "The input value is less than 0"
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Set Positive message",
+							"description": "The input value greater than 0",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": []
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"Input": {
+				"type": "Integer"
+			},
+			"Message": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
