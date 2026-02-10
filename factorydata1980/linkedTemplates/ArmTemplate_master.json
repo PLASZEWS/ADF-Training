@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'DataLake'"
 		},
+		"storageaccount_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'storageaccount'"
+		},
 		"AzureSqlDataWarehouse_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "kawdb1.database.windows.net"
@@ -30,6 +34,18 @@
 		"DataLake_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://storageaccountkaw1.dfs.core.windows.net/"
+		},
+		"storageaccount_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://storageaccountkaw1.dfs.core.windows.net/"
+		},
+		"tumbling_trigger_properties_pipeline_parameters_startTime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowStartTime"
+		},
+		"tumbling_trigger_properties_pipeline_parameters_endTime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
 		},
 		"containerUri": {
 			"type": "string",
@@ -64,6 +80,9 @@
 					"DataLake_accountKey": {
 						"value": "[parameters('DataLake_accountKey')]"
 					},
+					"storageaccount_accountKey": {
+						"value": "[parameters('storageaccount_accountKey')]"
+					},
 					"AzureSqlDataWarehouse_properties_typeProperties_server": {
 						"value": "[parameters('AzureSqlDataWarehouse_properties_typeProperties_server')]"
 					},
@@ -75,10 +94,39 @@
 					},
 					"DataLake_properties_typeProperties_url": {
 						"value": "[parameters('DataLake_properties_typeProperties_url')]"
+					},
+					"storageaccount_properties_typeProperties_url": {
+						"value": "[parameters('storageaccount_properties_typeProperties_url')]"
 					}
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "factorydata1980_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"tumbling_trigger_properties_pipeline_parameters_startTime": {
+						"value": "[parameters('tumbling_trigger_properties_pipeline_parameters_startTime')]"
+					},
+					"tumbling_trigger_properties_pipeline_parameters_endTime": {
+						"value": "[parameters('tumbling_trigger_properties_pipeline_parameters_endTime')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'factorydata1980_ArmTemplate_0')]"
+			]
 		}
 	]
 }

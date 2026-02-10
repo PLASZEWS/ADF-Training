@@ -11,6 +11,9 @@
 		"DataLake_accountKey": {
 			"value": ""
 		},
+		"storageaccount_accountKey": {
+			"value": ""
+		},
 		"AzureSqlDataWarehouse_properties_typeProperties_server": {
 			"value": "kawdb1.database.windows.net"
 		},
@@ -22,6 +25,15 @@
 		},
 		"DataLake_properties_typeProperties_url": {
 			"value": "https://storageaccountkaw1.dfs.core.windows.net/"
+		},
+		"storageaccount_properties_typeProperties_url": {
+			"value": "https://storageaccountkaw1.dfs.core.windows.net/"
+		},
+		"tumbling_trigger_properties_pipeline_parameters_startTime": {
+			"value": "@trigger().outputs.windowStartTime"
+		},
+		"tumbling_trigger_properties_pipeline_parameters_endTime": {
+			"value": "@trigger().outputs.windowEndTime"
 		},
 		"containerUri": {
 			"value": ""
