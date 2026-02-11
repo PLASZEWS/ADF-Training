@@ -1,0 +1,148 @@
+{
+	"name": "SCD2",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "src_employees",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlEmployeeDWH",
+						"type": "DatasetReference"
+					},
+					"name": "Target"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "AzureSqlEmployeeDWH",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "RenameSomeColumns"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "alterRow1"
+				},
+				{
+					"name": "alterRow2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          emp_id as short,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          DOB as string,",
+				"          mobile as long,",
+				"          gender as string,",
+				"          address_street as string,",
+				"          address_city as string,",
+				"          entry_date as timestamp,",
+				"          store_id as short",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     inferDriftedColumnTypes: true,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source(output(",
+				"          emp_key as integer,",
+				"          emp_id as integer,",
+				"          emp_last_name as string,",
+				"          city as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     inferDriftedColumnTypes: true,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'Select emp_key,emp_id,emp_last_name,city\\nfrom dbo.employeeDWH\\n',",
+				"     format: 'query') ~> Target",
+				"source1 select(mapColumn(",
+				"          src_emp_id = emp_id,",
+				"          src_first_name = first_name,",
+				"          src_last_name = last_name,",
+				"          src_DOB = DOB,",
+				"          src_mobile = mobile,",
+				"          src_gender = gender,",
+				"          src_address_street = address_street,",
+				"          src_address_city = address_city,",
+				"          src_entry_date = entry_date,",
+				"          src_store_id = store_id",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RenameSomeColumns",
+				"RenameSomeColumns, Target lookup(src_emp_id == emp_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 derive(active = iif(isNull(emp_key), 'I', iif(src_last_name!=emp_last_name && src_address_city!=city,'U','R')),",
+				"          end_date = toDate('9999-12-31'),",
+				"          current = currentTimestamp(),",
+				"          de_ef_start_date = currentTimestamp(),",
+				"          de_ef_end_date = currentTimestamp(),",
+				"          de_created_date = currentTimestamp()) ~> derivedColumn1",
+				"derivedColumn1 split(active=='I' || active=='U',",
+				"     active=='U',",
+				"     disjoint: false) ~> split1@(cinsert, cupdate)",
+				"split1@cinsert alterRow(insertIf(active=='I' || active=='U')) ~> alterRow1",
+				"split1@cupdate alterRow(updateIf(active=='U')) ~> alterRow2",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          emp_key as integer,",
+				"          emp_id as integer,",
+				"          emp_first_name as string,",
+				"          emp_last_name as string,",
+				"          DOB as date,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address as string,",
+				"          city as string,",
+				"          last_update_date as timestamp,",
+				"          created_date as timestamp,",
+				"          ef_start_date as timestamp,",
+				"          ef_end_date as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          emp_key,",
+				"          emp_id = src_emp_id,",
+				"          emp_first_name = src_first_name,",
+				"          emp_last_name = src_last_name,",
+				"          DOB = src_DOB,",
+				"          city = src_address_city,",
+				"          created_date = current,",
+				"          ef_start_date = de_ef_start_date,",
+				"          ef_end_date = de_ef_end_date",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
