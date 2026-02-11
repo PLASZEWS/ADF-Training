@@ -5,9 +5,9 @@
 		"typeProperties": {
 			"sources": [
 				{
-					"linkedService": {
-						"referenceName": "storageaccount",
-						"type": "LinkedServiceReference"
+					"dataset": {
+						"referenceName": "src_employees",
+						"type": "DatasetReference"
 					},
 					"name": "source1"
 				}
@@ -15,43 +15,39 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "DelimitedText1",
+						"referenceName": "DelimitedText2",
 						"type": "DatasetReference"
 					},
-					"name": "sink1",
-					"rejectedDataLinkedService": {
-						"referenceName": "storageaccount",
-						"type": "LinkedServiceReference"
-					}
+					"name": "sink1"
 				}
 			],
 			"transformations": [],
 			"scriptLines": [
 				"source(output(",
-				"          {_col0_} as string,",
-				"          {_col1_} as string,",
-				"          {_col2_} as string,",
-				"          {_col3_} as string,",
-				"          {_col4_} as string,",
-				"          {_col5_} as string,",
-				"          {_col6_} as string,",
-				"          {_col7_} as string,",
-				"          {_col8_} as string",
+				"          emp_id as string,",
+				"          first_name as string,",
+				"          DOB as string,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address_street as string,",
+				"          address_city as string,",
+				"          entry_date as string,",
+				"          store_id as string",
 				"     ),",
-				"     useSchema: false,",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     inferDriftedColumnTypes: true,",
-				"     ignoreNoFilesFound: false,",
-				"     format: 'delimited',",
-				"     fileSystem: 'datalake',",
-				"     columnDelimiter: ',',",
-				"     escapeChar: '\\\\',",
-				"     quoteChar: '\\\"',",
-				"     columnNamesAsHeader: false,",
-				"     wildcardPaths:['employees/']) ~> source1",
+				"     ignoreNoFilesFound: false) ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          {Order ID} as string,",
+				"          Product as string,",
+				"          {Quantity Ordered} as string,",
+				"          {Price Each} as string,",
+				"          {Order Date} as string,",
+				"          {Purchase Address} as string",
+				"     ),",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",

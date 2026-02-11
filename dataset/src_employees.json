@@ -35,27 +35,39 @@
 		},
 		"schema": [
 			{
-				"name": "Order ID",
+				"name": "emp_id",
 				"type": "String"
 			},
 			{
-				"name": "Product",
+				"name": "first_name",
 				"type": "String"
 			},
 			{
-				"name": "Quantity Ordered",
+				"name": "DOB",
 				"type": "String"
 			},
 			{
-				"name": "Price Each",
+				"name": "mobile",
 				"type": "String"
 			},
 			{
-				"name": "Order Date",
+				"name": "gender",
 				"type": "String"
 			},
 			{
-				"name": "Purchase Address",
+				"name": "address_street",
+				"type": "String"
+			},
+			{
+				"name": "address_city",
+				"type": "String"
+			},
+			{
+				"name": "entry_date",
+				"type": "String"
+			},
+			{
+				"name": "store_id",
 				"type": "String"
 			}
 		]
