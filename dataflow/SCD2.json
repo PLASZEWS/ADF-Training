@@ -25,7 +25,14 @@
 						"referenceName": "AzureSqlEmployeeDWH",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "Insert"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlEmployeeDWH",
+						"type": "DatasetReference"
+					},
+					"name": "Update"
 				}
 			],
 			"transformations": [
@@ -130,6 +137,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 2,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
 				"          emp_key,",
@@ -141,7 +149,38 @@
 				"          created_date = current,",
 				"          ef_start_date = de_ef_start_date,",
 				"          ef_end_date = de_ef_end_date",
-				"     )) ~> sink1"
+				"     )) ~> Insert",
+				"alterRow2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          emp_key as integer,",
+				"          emp_id as integer,",
+				"          emp_first_name as string,",
+				"          emp_last_name as string,",
+				"          DOB as date,",
+				"          mobile as string,",
+				"          gender as string,",
+				"          address as string,",
+				"          city as string,",
+				"          last_update_date as timestamp,",
+				"          created_date as timestamp,",
+				"          ef_start_date as timestamp,",
+				"          ef_end_date as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['emp_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          emp_id = src_emp_id,",
+				"          ef_end_date = de_ef_end_date",
+				"     )) ~> Update"
 			]
 		}
 	}
