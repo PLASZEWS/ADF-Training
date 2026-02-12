@@ -246,28 +246,16 @@
 						"type": "varchar"
 					},
 					{
-						"name": "last_update_date",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					},
-					{
 						"name": "created_date",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
+						"type": "date"
 					},
 					{
 						"name": "ef_start_date",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
+						"type": "date"
 					},
 					{
 						"name": "ef_end_date",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
+						"type": "date"
 					}
 				],
 				"typeProperties": {
@@ -374,6 +362,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
+						"fileName": "Employee.txt",
 						"folderPath": "employees",
 						"fileSystem": "datalake"
 					},
