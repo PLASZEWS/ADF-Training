@@ -253,6 +253,9 @@
 						},
 						{
 							"name": "alterRow2"
+						},
+						{
+							"name": "surrogateKey1"
 						}
 					],
 					"scriptLines": [
@@ -311,8 +314,11 @@
 						"derivedColumn1 split(active=='I' || active=='U',",
 						"     active=='U',",
 						"     disjoint: false) ~> split1@(cinsert, cupdate)",
-						"split1@cinsert alterRow(insertIf(active=='I'||active=='U')) ~> alterRow1",
+						"surrogateKey1 alterRow(insertIf(active=='I'||active=='U')) ~> alterRow1",
 						"split1@cupdate alterRow(updateIf(active=='U')) ~> alterRow2",
+						"split1@cinsert keyGenerate(output(emp_key as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> surrogateKey1",
 						"alterRow1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
