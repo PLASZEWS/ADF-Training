@@ -1,0 +1,69 @@
+{
+	"name": "AzureSqlEmployeeDWH_V2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "emp_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "emp_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "emp_first_name",
+				"type": "varchar"
+			},
+			{
+				"name": "emp_last_name",
+				"type": "varchar"
+			},
+			{
+				"name": "DOB",
+				"type": "date"
+			},
+			{
+				"name": "mobile",
+				"type": "varchar"
+			},
+			{
+				"name": "gender",
+				"type": "varchar"
+			},
+			{
+				"name": "address",
+				"type": "varchar"
+			},
+			{
+				"name": "city",
+				"type": "varchar"
+			},
+			{
+				"name": "created_date",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ef_start_date",
+				"type": "date"
+			},
+			{
+				"name": "ef_end_date",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "employeeDWH_V2"
+		}
+	}
+}
