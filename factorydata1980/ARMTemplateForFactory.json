@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "factorydata1980"
 		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
 		"AzureSqlDataWarehouse_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDataWarehouse'"
@@ -267,6 +271,54 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/AzureDataDelimitedText')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SCD2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "SCD2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "SCD2",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"Target": {},
+									"Insert": {},
+									"Update": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 32,
+								"computeType": "MemoryOptimized"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/SCD2')]"
 			]
 		},
 		{
@@ -663,116 +715,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Lookup1",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"dataset": {
-								"referenceName": "src_employees",
-								"type": "DatasetReference",
-								"parameters": {
-									"folder": {
-										"value": "employees",
-										"type": "Expression"
-									},
-									"filename": "Employee.txt"
-								}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "ForEach1",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "Lookup1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Lookup1').output",
-								"type": "Expression"
-							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "Data flow1",
-									"type": "ExecuteDataFlow",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"dataflow": {
-											"referenceName": "dataflow1",
-											"type": "DataFlowReference",
-											"parameters": {},
-											"datasetParameters": {
-												"source1": {
-													"folder": "employees",
-													"filename": "Employee.txt"
-												},
-												"sink1": {}
-											}
-										},
-										"staging": {},
-										"compute": {
-											"coreCount": 8,
-											"computeType": "General"
-										},
-										"traceLevel": "Fine"
-									}
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/src_employees')]",
-				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/AzureDataDelimitedText')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -844,6 +786,90 @@
 				"typeProperties": {
 					"schema": "dbo",
 					"table": "TestFile"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDataWarehouse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlEmployeeDWH')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDataWarehouse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "emp_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "emp_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "emp_first_name",
+						"type": "varchar"
+					},
+					{
+						"name": "emp_last_name",
+						"type": "varchar"
+					},
+					{
+						"name": "DOB",
+						"type": "date"
+					},
+					{
+						"name": "mobile",
+						"type": "varchar"
+					},
+					{
+						"name": "gender",
+						"type": "varchar"
+					},
+					{
+						"name": "address",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					},
+					{
+						"name": "last_update_date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "created_date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ef_start_date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ef_end_date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "employeeDWH"
 				}
 			},
 			"dependsOn": [
@@ -940,27 +966,12 @@
 					"referenceName": "storageaccount",
 					"type": "LinkedServiceReference"
 				},
-				"parameters": {
-					"folder": {
-						"type": "string"
-					},
-					"filename": {
-						"type": "string"
-					}
-				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().filename",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@dataset().folder",
-							"type": "Expression"
-						},
+						"folderPath": "employees",
 						"fileSystem": "datalake"
 					},
 					"columnDelimiter": ",",
@@ -975,6 +986,10 @@
 					},
 					{
 						"name": "first_name",
+						"type": "String"
+					},
+					{
+						"name": "last_name",
 						"type": "String"
 					},
 					{
@@ -1010,6 +1025,19 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/storageaccount')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzureSqlDataWarehouse')]",
@@ -1694,7 +1722,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"name": "[concat(parameters('factoryName'), '/SCD2')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -1707,55 +1735,184 @@
 								"type": "DatasetReference"
 							},
 							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "AzureSqlEmployeeDWH",
+								"type": "DatasetReference"
+							},
+							"name": "Target"
 						}
 					],
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "DelimitedText2",
+								"referenceName": "AzureSqlEmployeeDWH",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
+							"name": "Insert"
+						},
+						{
+							"dataset": {
+								"referenceName": "AzureSqlEmployeeDWH",
+								"type": "DatasetReference"
+							},
+							"name": "Update"
 						}
 					],
-					"transformations": [],
+					"transformations": [
+						{
+							"name": "RenameSomeColumns"
+						},
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "split1"
+						},
+						{
+							"name": "alterRow1"
+						},
+						{
+							"name": "alterRow2"
+						}
+					],
 					"scriptLines": [
 						"source(output(",
-						"          emp_id as string,",
+						"          emp_id as short,",
 						"          first_name as string,",
+						"          last_name as string,",
 						"          DOB as string,",
-						"          mobile as string,",
+						"          mobile as long,",
 						"          gender as string,",
 						"          address_street as string,",
 						"          address_city as string,",
-						"          entry_date as string,",
-						"          store_id as string",
+						"          entry_date as timestamp,",
+						"          store_id as short",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     inferDriftedColumnTypes: true,",
 						"     ignoreNoFilesFound: false) ~> source1",
-						"source1 sink(allowSchemaDrift: true,",
+						"source(output(",
+						"          emp_key as integer,",
+						"          emp_id as integer,",
+						"          emp_last_name as string,",
+						"          city as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'Select emp_key,emp_id,emp_last_name,city\\nfrom dbo.employeeDWH\\n',",
+						"     format: 'query') ~> Target",
+						"source1 select(mapColumn(",
+						"          src_emp_id = emp_id,",
+						"          src_first_name = first_name,",
+						"          src_last_name = last_name,",
+						"          src_DOB = DOB,",
+						"          src_mobile = mobile,",
+						"          src_gender = gender,",
+						"          src_address_street = address_street,",
+						"          src_address_city = address_city,",
+						"          src_entry_date = entry_date,",
+						"          src_store_id = store_id",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> RenameSomeColumns",
+						"RenameSomeColumns, Target lookup(src_emp_id == emp_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 derive(active = iif(isNull(emp_key), 'I', iif(src_last_name!=emp_last_name && src_address_city!=city,'U','R')),",
+						"          end_date = toDate('9999-12-31'),",
+						"          current = currentTimestamp(),",
+						"          de_ef_start_date = currentTimestamp(),",
+						"          de_ef_end_date = currentTimestamp(),",
+						"          de_created_date = currentTimestamp()) ~> derivedColumn1",
+						"derivedColumn1 split(active=='I' || active=='U',",
+						"     active=='U',",
+						"     disjoint: false) ~> split1@(cinsert, cupdate)",
+						"split1@cinsert alterRow(insertIf(active=='I'||active=='U')) ~> alterRow1",
+						"split1@cupdate alterRow(updateIf(active=='U')) ~> alterRow2",
+						"alterRow1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
-						"          {Order ID} as string,",
-						"          Product as string,",
-						"          {Quantity Ordered} as string,",
-						"          {Price Each} as string,",
-						"          {Order Date} as string,",
-						"          {Purchase Address} as string",
+						"          emp_key as integer,",
+						"          emp_id as integer,",
+						"          emp_first_name as string,",
+						"          emp_last_name as string,",
+						"          DOB as date,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          last_update_date as timestamp,",
+						"          created_date as timestamp,",
+						"          ef_start_date as timestamp,",
+						"          ef_end_date as timestamp",
 						"     ),",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     preSQLs:['SET IDENTITY_INSERT dbo.employeeDWH ON;'],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sink1"
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          emp_key,",
+						"          emp_id = src_emp_id,",
+						"          emp_first_name = src_first_name,",
+						"          emp_last_name = src_last_name,",
+						"          DOB = src_DOB,",
+						"          city = src_address_city,",
+						"          created_date = current,",
+						"          ef_start_date = de_ef_start_date,",
+						"          ef_end_date = de_ef_end_date",
+						"     )) ~> Insert",
+						"alterRow2 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          emp_key as integer,",
+						"          emp_id as integer,",
+						"          emp_first_name as string,",
+						"          emp_last_name as string,",
+						"          DOB as date,",
+						"          mobile as string,",
+						"          gender as string,",
+						"          address as string,",
+						"          city as string,",
+						"          last_update_date as timestamp,",
+						"          created_date as timestamp,",
+						"          ef_start_date as timestamp,",
+						"          ef_end_date as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['emp_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          emp_id = src_emp_id,",
+						"          ef_end_date = de_ef_end_date",
+						"     )) ~> Update"
 					]
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/src_employees')]",
-				"[concat(variables('factoryId'), '/datasets/DelimitedText2')]"
+				"[concat(variables('factoryId'), '/datasets/AzureSqlEmployeeDWH')]"
 			]
 		}
 	]

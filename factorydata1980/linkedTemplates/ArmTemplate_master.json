@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "factorydata1980"
 		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
 		"AzureSqlDataWarehouse_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDataWarehouse'"
@@ -73,6 +77,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"AzureBlobStorage1_connectionString": {
+						"value": "[parameters('AzureBlobStorage1_connectionString')]"
 					},
 					"AzureSqlDataWarehouse_password": {
 						"value": "[parameters('AzureSqlDataWarehouse_password')]"
