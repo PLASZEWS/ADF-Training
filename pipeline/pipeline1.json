@@ -28,14 +28,7 @@
 					},
 					"dataset": {
 						"referenceName": "src_employees",
-						"type": "DatasetReference",
-						"parameters": {
-							"folder": {
-								"value": "employees",
-								"type": "Expression"
-							},
-							"filename": "Employee.txt"
-						}
+						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
 				}
@@ -72,16 +65,6 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"dataflow": {
-									"referenceName": "dataflow1",
-									"type": "DataFlowReference",
-									"datasetParameters": {
-										"source1": {
-											"folder": "employees",
-											"filename": "Employee.txt"
-										}
-									}
-								},
 								"compute": {
 									"coreCount": 8,
 									"computeType": "General"
