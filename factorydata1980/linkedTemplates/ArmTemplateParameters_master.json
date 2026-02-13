@@ -11,6 +11,9 @@
 		"AzureSqlDataWarehouse_password": {
 			"value": ""
 		},
+		"AzureSqlDatabase1_password": {
+			"value": ""
+		},
 		"DataLake_accountKey": {
 			"value": ""
 		},
@@ -24,6 +27,15 @@
 			"value": "DataWarehouse"
 		},
 		"AzureSqlDataWarehouse_properties_typeProperties_userName": {
+			"value": "AdminPL"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_server": {
+			"value": "kawdb1.database.windows.net"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_database": {
+			"value": "DataWarehouse"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_userName": {
 			"value": "AdminPL"
 		},
 		"DataLake_properties_typeProperties_url": {

@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDataWarehouse'"
 		},
+		"AzureSqlDatabase1_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'AzureSqlDatabase1'"
+		},
 		"DataLake_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'DataLake'"
@@ -32,6 +36,18 @@
 			"defaultValue": "DataWarehouse"
 		},
 		"AzureSqlDataWarehouse_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "AdminPL"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "kawdb1.database.windows.net"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DataWarehouse"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "AdminPL"
 		},
@@ -84,6 +100,9 @@
 					"AzureSqlDataWarehouse_password": {
 						"value": "[parameters('AzureSqlDataWarehouse_password')]"
 					},
+					"AzureSqlDatabase1_password": {
+						"value": "[parameters('AzureSqlDatabase1_password')]"
+					},
 					"DataLake_accountKey": {
 						"value": "[parameters('DataLake_accountKey')]"
 					},
@@ -98,6 +117,15 @@
 					},
 					"AzureSqlDataWarehouse_properties_typeProperties_userName": {
 						"value": "[parameters('AzureSqlDataWarehouse_properties_typeProperties_userName')]"
+					},
+					"AzureSqlDatabase1_properties_typeProperties_server": {
+						"value": "[parameters('AzureSqlDatabase1_properties_typeProperties_server')]"
+					},
+					"AzureSqlDatabase1_properties_typeProperties_database": {
+						"value": "[parameters('AzureSqlDatabase1_properties_typeProperties_database')]"
+					},
+					"AzureSqlDatabase1_properties_typeProperties_userName": {
+						"value": "[parameters('AzureSqlDatabase1_properties_typeProperties_userName')]"
 					},
 					"DataLake_properties_typeProperties_url": {
 						"value": "[parameters('DataLake_properties_typeProperties_url')]"
