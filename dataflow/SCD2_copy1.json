@@ -22,14 +22,14 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "AzureSqlEmployeeDWH",
+						"referenceName": "AzureSqlEmployeeDWH_V2",
 						"type": "DatasetReference"
 					},
 					"name": "Insert"
 				},
 				{
 					"dataset": {
-						"referenceName": "AzureSqlEmployeeDWH",
+						"referenceName": "AzureSqlEmployeeDWH_V2",
 						"type": "DatasetReference"
 					},
 					"name": "Update"
@@ -130,7 +130,7 @@
 				"          gender as string,",
 				"          address as string,",
 				"          city as string,",
-				"          created_date as date,",
+				"          created_date as timestamp,",
 				"          ef_start_date as date,",
 				"          ef_end_date as date",
 				"     ),",
@@ -169,7 +169,7 @@
 				"          gender as string,",
 				"          address as string,",
 				"          city as string,",
-				"          created_date as date,",
+				"          created_date as timestamp,",
 				"          ef_start_date as date,",
 				"          ef_end_date as date",
 				"     ),",
