@@ -184,7 +184,7 @@
 				"     saveOrder: 1,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          emp_id,",
+				"          emp_id = src_emp_id,",
 				"          ef_end_date = u_ef_end_date",
 				"     )) ~> Update"
 			]
