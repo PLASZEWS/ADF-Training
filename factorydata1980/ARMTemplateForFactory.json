@@ -409,6 +409,8 @@
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
 									"recursive": true,
+									"wildcardFolderPath": "employees",
+									"wildcardFileName": "*.txt",
 									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {
