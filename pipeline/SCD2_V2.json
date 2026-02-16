@@ -17,13 +17,7 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "SCD2_copy1",
-						"type": "DataFlowReference",
-						"datasetParameters": {
-							"source1": {
-								"folder": "employees",
-								"filename": "Employee.txt"
-							}
-						}
+						"type": "DataFlowReference"
 					},
 					"compute": {
 						"coreCount": 8,
