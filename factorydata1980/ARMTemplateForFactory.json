@@ -344,7 +344,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Data flow1",
+						"name": "SCD2",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -1961,7 +1961,7 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     query: 'Select emp_id,emp_last_name,city\\nfrom dbo.employeeDWH\\n',",
+						"     query: 'Select  emp_id,emp_last_name,city\\nfrom dbo.employeeDWH\\n',",
 						"     format: 'query') ~> Target",
 						"source1 select(mapColumn(",
 						"          src_emp_id = emp_id,",
@@ -2256,6 +2256,7 @@
 						"     saveOrder: 1,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
+						"          emp_key,",
 						"          emp_id = src_emp_id,",
 						"          ef_end_date = u_ef_end_date",
 						"     )) ~> Update"
