@@ -53,6 +53,9 @@
 				},
 				{
 					"name": "alterRow2"
+				},
+				{
+					"name": "surrogateKey1"
 				}
 			],
 			"scriptLines": [
@@ -112,7 +115,10 @@
 				"     disjoint: true) ~> split1@(cinsert, cupdate)",
 				"split1@cinsert alterRow(insertIf(active=='I'||active=='U')) ~> alterRow1",
 				"split1@cupdate alterRow(updateIf(active=='U')) ~> alterRow2",
-				"alterRow1 sink(allowSchemaDrift: true,",
+				"alterRow1 keyGenerate(output(emp_key as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          emp_key as integer,",
@@ -138,6 +144,7 @@
 				"     saveOrder: 2,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
+				"          emp_key,",
 				"          emp_id = src_emp_id,",
 				"          emp_first_name = src_first_name,",
 				"          emp_last_name = src_last_name,",
