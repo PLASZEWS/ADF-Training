@@ -28,7 +28,14 @@
 					},
 					"dataset": {
 						"referenceName": "source_employees",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"folder": {
+								"value": "employees/@utcNow('yyyy-mm-dd')",
+								"type": "Expression"
+							},
+							"filename": "Employee.txt"
+						}
 					},
 					"firstRowOnly": false
 				}
