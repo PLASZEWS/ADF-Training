@@ -2249,7 +2249,7 @@
 						"     insertable:false,",
 						"     updateable:true,",
 						"     upsertable:false,",
-						"     keys:['emp_id'],",
+						"     keys:['emp_key'],",
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
