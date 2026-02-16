@@ -17,7 +17,13 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "SCD2",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"source1": {
+								"folder": "employees",
+								"filename": "Employee.txt"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 32,
