@@ -313,7 +313,10 @@
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"source1": {},
+									"source1": {
+										"folder": "employees",
+										"filename": "Employee.txt"
+									},
 									"Target": {},
 									"Insert": {},
 									"Update": {}
@@ -361,7 +364,10 @@
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"source1": {},
+									"source1": {
+										"folder": "employees",
+										"filename": "Employee.txt"
+									},
 									"Target": {},
 									"Insert": {},
 									"Update": {}
@@ -384,6 +390,18 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/SCD2_copy1')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SCD2_V2_copy1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Sql Test')]",
@@ -1084,7 +1102,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/src_employees')]",
+			"name": "[concat(parameters('factoryName'), '/source_employees')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -1097,8 +1115,49 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "Employee.txt",
-						"folderPath": "employees",
+						"fileSystem": "datalake"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/storageaccount')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/src_employees')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "storageaccount",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"folder": {
+						"type": "string"
+					},
+					"filename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "Employee.txt",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "employees",
+							"type": "Expression"
+						},
 						"fileSystem": "datalake"
 					},
 					"columnDelimiter": ",",
