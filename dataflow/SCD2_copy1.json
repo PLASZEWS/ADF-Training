@@ -177,7 +177,7 @@
 				"     insertable:false,",
 				"     updateable:true,",
 				"     upsertable:false,",
-				"     keys:['emp_id'],",
+				"     keys:['emp_id','ef_start_date'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
@@ -185,6 +185,7 @@
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
 				"          emp_id = src_emp_id,",
+				"          ef_start_date = src_entry_date,",
 				"          emp_key,",
 				"          ef_end_date = u_ef_end_date",
 				"     )) ~> Update"
