@@ -592,6 +592,7 @@
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
 						"     isolationLevel: 'READ_UNCOMMITTED',",
 						"     query: 'Select  emp_key,emp_id,emp_last_name,city\\nfrom dbo.employeeDWH_V2\\n',",
 						"     format: 'query') ~> Target",
