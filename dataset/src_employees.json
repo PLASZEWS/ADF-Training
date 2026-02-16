@@ -19,11 +19,11 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"fileName": {
-					"value": "@dataset().filename",
+					"value": "Employee.txt",
 					"type": "Expression"
 				},
 				"folderPath": {
-					"value": "@dataset().folder",
+					"value": "employees",
 					"type": "Expression"
 				},
 				"fileSystem": "datalake"
