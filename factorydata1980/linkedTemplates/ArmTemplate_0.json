@@ -298,7 +298,7 @@
 				],
 				"typeProperties": {
 					"schema": "dbo",
-					"table": "employeeDWH"
+					"table": "employeeDWH_V2"
 				}
 			},
 			"dependsOn": [
@@ -997,6 +997,13 @@
 						"     stepValue: 1L) ~> surrogateKey1",
 						"surrogateKey1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     input(",
+						"          PurchaseAddress as string,",
+						"          PurchaseCity as string,",
+						"          State as string,",
+						"          ZipCode as string,",
+						"          PurchaseAddressID as long",
+						"     ),",
 						"     format: 'parquet',",
 						"     fileSystem: 'datalake',",
 						"     folderPath: 'Gold/ProductToDatabase/PurchaseAddress',",
