@@ -420,7 +420,7 @@
 								"type": "DatasetReference",
 								"parameters": {
 									"folder": {
-										"value": "employees/@utcNow('yyyy-mm-dd')",
+										"value": "@concat('employees',formatDateTime(utcNow(),'yyyy-mm-dd'))",
 										"type": "Expression"
 									},
 									"filename": "Employee.txt"
