@@ -109,7 +109,7 @@
 				"          de_created_date = currentTimestamp()) ~> derivedColumn1",
 				"derivedColumn1 split(active=='I' || active=='U',",
 				"     active=='U',",
-				"     disjoint: false) ~> split1@(cinsert, cupdate)",
+				"     disjoint: true) ~> split1@(cinsert, cupdate)",
 				"split1@cinsert alterRow(insertIf(active=='I'||active=='U')) ~> alterRow1",
 				"split1@cupdate alterRow(updateIf(active=='U')) ~> alterRow2",
 				"alterRow1 sink(allowSchemaDrift: true,",
