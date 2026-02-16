@@ -694,6 +694,7 @@
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
 						"          emp_id = src_emp_id,",
+						"          emp_key,",
 						"          ef_end_date = u_ef_end_date",
 						"     )) ~> Update"
 					]
