@@ -30,10 +30,7 @@
 						"referenceName": "source_employees",
 						"type": "DatasetReference",
 						"parameters": {
-							"folder": {
-								"value": "@concat('employees',formatDateTime(utcNow(),'yyyy-mm-dd'))",
-								"type": "Expression"
-							},
+							"folder": "employees",
 							"filename": "Employee.txt"
 						}
 					},
