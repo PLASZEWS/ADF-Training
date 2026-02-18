@@ -5,9 +5,6 @@
 		"factoryName": {
 			"value": "factorydata1980"
 		},
-		"AzureBlobStorage1_connectionString": {
-			"value": ""
-		},
 		"AzureSqlDataWarehouse_password": {
 			"value": ""
 		},
@@ -15,6 +12,15 @@
 			"value": ""
 		},
 		"DataLake_accountKey": {
+			"value": ""
+		},
+		"ForSQLTable_password": {
+			"value": ""
+		},
+		"InputBlob_connectionString": {
+			"value": ""
+		},
+		"OutputDatabase_password": {
 			"value": ""
 		},
 		"storageaccount_accountKey": {
@@ -40,6 +46,24 @@
 		},
 		"DataLake_properties_typeProperties_url": {
 			"value": "https://storageaccountkaw1.dfs.core.windows.net/"
+		},
+		"ForSQLTable_properties_typeProperties_server": {
+			"value": "kawdb1.database.windows.net"
+		},
+		"ForSQLTable_properties_typeProperties_database": {
+			"value": "DataWarehouse"
+		},
+		"ForSQLTable_properties_typeProperties_userName": {
+			"value": "AdminPL"
+		},
+		"OutputDatabase_properties_typeProperties_server": {
+			"value": "kawdb1.database.windows.net"
+		},
+		"OutputDatabase_properties_typeProperties_database": {
+			"value": "DataWarehouse"
+		},
+		"OutputDatabase_properties_typeProperties_userName": {
+			"value": "AdminPL"
 		},
 		"storageaccount_properties_typeProperties_url": {
 			"value": "https://storageaccountkaw1.dfs.core.windows.net/"
