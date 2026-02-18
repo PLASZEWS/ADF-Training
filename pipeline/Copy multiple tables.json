@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Lookup1",
+				"name": "List Tables",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -17,23 +17,23 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select *\nfrom Datawarehouse.information_schema.tables\nwhere table_type='Base Table'",
+						"sqlReaderQuery": "select *\nfrom DataWarehouse.INFORMATION_SCHEMA.TABLES  where table_type='BASE TABLE'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "ListTable",
+						"referenceName": "TableList",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
 				}
 			},
 			{
-				"name": "ForEach1",
+				"name": "For Each Table",
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Lookup1",
+						"activity": "List Tables",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -42,79 +42,9 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Lookup1').output.value",
+						"value": "@activity('List Tables').output.value",
 						"type": "Expression"
-					},
-					"activities": [
-						{
-							"name": "Export Data",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"sink": {
-									"type": "DelimitedTextSink",
-									"storeSettings": {
-										"type": "AzureBlobStorageWriteSettings"
-									},
-									"formatSettings": {
-										"type": "DelimitedTextWriteSettings",
-										"quoteAllText": true,
-										"fileExtension": ".txt"
-									}
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "ListTable",
-									"type": "DatasetReference",
-									"parameters": {
-										"TableName": {
-											"value": "@item().table_name",
-											"type": "Expression"
-										},
-										"SchemaName": {
-											"value": "@item().table_schema",
-											"type": "Expression"
-										}
-									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "CSVTable",
-									"type": "DatasetReference",
-									"parameters": {
-										"filename": {
-											"value": "@concat(item().table_schema,'-',item().table_name,'.csv')",
-											"type": "Expression"
-										}
-									}
-								}
-							]
-						}
-					]
+					}
 				}
 			}
 		],
