@@ -1,0 +1,12 @@
+{
+	"name": "data_scr",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDbDemo",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
