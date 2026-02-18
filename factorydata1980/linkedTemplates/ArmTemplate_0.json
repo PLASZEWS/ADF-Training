@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "factorydata1980"
 		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
 		"AzureSqlDataWarehouse_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDataWarehouse'"
@@ -96,6 +100,19 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzureSqlDataWarehouse')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -453,6 +470,84 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CSVTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"filename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "dump",
+						"container": "datalake"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "OrderId",
+						"type": "String"
+					},
+					{
+						"name": "Product",
+						"type": "String"
+					},
+					{
+						"name": "QuantityOrdered",
+						"type": "String"
+					},
+					{
+						"name": "PriceEach",
+						"type": "String"
+					},
+					{
+						"name": "OrderDate",
+						"type": "String"
+					},
+					{
+						"name": "Address",
+						"type": "String"
+					},
+					{
+						"name": "City",
+						"type": "String"
+					},
+					{
+						"name": "State",
+						"type": "String"
+					},
+					{
+						"name": "ZipCode",
+						"type": "String"
+					},
+					{
+						"name": "FileName",
+						"type": "String"
+					},
+					{
+						"name": "LoadDate",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
 			]
 		},
 		{
@@ -876,169 +971,6 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     partitionBy('hash', 1)) ~> sinkToGold"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DataLake')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ProductDatabaseToBronze')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "DataLake",
-								"type": "LinkedServiceReference"
-							},
-							"name": "SourceRaw"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "DataLake",
-								"type": "LinkedServiceReference"
-							},
-							"name": "ProductDatabaseToBronze"
-						}
-					],
-					"transformations": [
-						{
-							"name": "AddLoadDate"
-						},
-						{
-							"name": "select1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          {Order ID} as string,",
-						"          Product as string,",
-						"          {Quantity Ordered} as string,",
-						"          {Price Each} as string,",
-						"          {Order Date} as string,",
-						"          {Purchase Address} as string",
-						"     ),",
-						"     useSchema: false,",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     rowUrlColumn: 'FileName',",
-						"     format: 'delimited',",
-						"     fileSystem: 'datalake',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     wildcardPaths:['Raw/Raw/ProductDatabase/*.csv']) ~> SourceRaw",
-						"SourceRaw derive(LoadDate = currentDate()) ~> AddLoadDate",
-						"AddLoadDate select(mapColumn(",
-						"          OrderID = {Order ID},",
-						"          Product,",
-						"          QuantityOrdered = {Quantity Ordered},",
-						"          PriceEach = {Price Each},",
-						"          OrderDate = {Order Date},",
-						"          PurchaseAddress = {Purchase Address},",
-						"          FileName,",
-						"          LoadDate",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     fileSystem: 'datalake',",
-						"     folderPath: 'Bronze/ProductDatabase',",
-						"     truncate: true,",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> ProductDatabaseToBronze"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DataLake')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ProductDatabaseToGoldFileSource')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "DataLake",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceSilver"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "DataLake",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkToProduct"
-						}
-					],
-					"transformations": [
-						{
-							"name": "aggregate1"
-						},
-						{
-							"name": "surrogateKey1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          OrderID as integer,",
-						"          Product as string,",
-						"          QuantityOrdered as string,",
-						"          PriceEach as float,",
-						"          OrderDate as timestamp,",
-						"          PurchaseAddress as string,",
-						"          PurchaseCity as string,",
-						"          State as string,",
-						"          ZipCode as string,",
-						"          LoadDate as date,",
-						"          FileName as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'parquet',",
-						"     fileSystem: 'datalake',",
-						"     wildcardPaths:['Silver/ProductDatabase']) ~> sourceSilver",
-						"sourceSilver aggregate(groupBy(FileName),",
-						"     LoadDate = last(LoadDate)) ~> aggregate1",
-						"aggregate1 keyGenerate(output(FileSourceID as long),",
-						"     startAt: 1L,",
-						"     stepValue: 1L) ~> surrogateKey1",
-						"surrogateKey1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     fileSystem: 'datalake',",
-						"     folderPath: 'Gold/ProductToDatabase/FileSource',",
-						"     truncate: true,",
-						"     partitionFileNames:['FileSource.parquet'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkToProduct"
 					]
 				}
 			},

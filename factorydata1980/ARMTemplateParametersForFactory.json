@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "factorydata1980"
 		},
+		"AzureBlobStorage1_connectionString": {
+			"value": ""
+		},
 		"AzureSqlDataWarehouse_password": {
 			"value": ""
 		},

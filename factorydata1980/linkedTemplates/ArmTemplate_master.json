@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "factorydata1980"
 		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
 		"AzureSqlDataWarehouse_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDataWarehouse'"
@@ -126,6 +130,9 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"AzureBlobStorage1_connectionString": {
+						"value": "[parameters('AzureBlobStorage1_connectionString')]"
+					},
 					"AzureSqlDataWarehouse_password": {
 						"value": "[parameters('AzureSqlDataWarehouse_password')]"
 					},
@@ -206,6 +213,26 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'factorydata1980_ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "factorydata1980_ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
 					},
 					"tumbling_trigger_properties_pipeline_parameters_startTime": {
 						"value": "[parameters('tumbling_trigger_properties_pipeline_parameters_startTime')]"
@@ -216,7 +243,7 @@
 				}
 			},
 			"dependsOn": [
-				"[resourceId('Microsoft.Resources/deployments', 'factorydata1980_ArmTemplate_0')]"
+				"[resourceId('Microsoft.Resources/deployments', 'factorydata1980_ArmTemplate_1')]"
 			]
 		}
 	]
