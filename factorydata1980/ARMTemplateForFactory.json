@@ -418,7 +418,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "SELECT \n      max([LastModifyTime]) as NewWaterMarkValue\n  FROM [dValuebo].[data_src]",
+								"sqlReaderQuery": "SELECT \n      max([LastModifyTime]) as NewWaterMarkValue\n  FROM [dbo].[data_src]",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
