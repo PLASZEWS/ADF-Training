@@ -330,7 +330,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"filename": {
-													"value": "@concat(item().table_schema,'-',item().table_name,'.csv')",
+													"value": "@concat(item().table_schema,'-',item().table_name,'.txt')",
 													"type": "Expression"
 												}
 											}
