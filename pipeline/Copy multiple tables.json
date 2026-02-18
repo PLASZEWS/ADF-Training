@@ -23,17 +23,7 @@
 					},
 					"dataset": {
 						"referenceName": "ListTable",
-						"type": "DatasetReference",
-						"parameters": {
-							"TableName": {
-								"value": "@pipeline().parameters.TableName",
-								"type": "Expression"
-							},
-							"SchemaName": {
-								"value": "@pipeline().parameters.Schema",
-								"type": "Expression"
-							}
-						}
+						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
 				}
@@ -128,14 +118,6 @@
 				}
 			}
 		],
-		"parameters": {
-			"TableName": {
-				"type": "string"
-			},
-			"Schema": {
-				"type": "string"
-			}
-		},
 		"annotations": []
 	}
 }
