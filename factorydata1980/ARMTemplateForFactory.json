@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
 		},
+		"AzureBlobStorage2_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage2'"
+		},
 		"AzureSqlDataWarehouse_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDataWarehouse'"
@@ -22,10 +26,6 @@
 		"DataLake_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'DataLake'"
-		},
-		"ForSQLTable_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'ForSQLTable'"
 		},
 		"InputBlob_connectionString": {
 			"type": "secureString",
@@ -66,18 +66,6 @@
 		"DataLake_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://storageaccountkaw1.dfs.core.windows.net/"
-		},
-		"ForSQLTable_properties_typeProperties_server": {
-			"type": "string",
-			"defaultValue": "kawdb1.database.windows.net"
-		},
-		"ForSQLTable_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "DataWarehouse"
-		},
-		"ForSQLTable_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "AdminPL"
 		},
 		"OutputDatabase_properties_typeProperties_server": {
 			"type": "string",
@@ -237,7 +225,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Lookup1",
+						"name": "List Tables",
 						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
@@ -251,33 +239,24 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "select *\nfrom Datawarehouse.information_schema.tables\nwhere table_type='Base Table'",
+								"sqlReaderQuery": "select *\nfrom DataWarehouse.INFORMATION_SCHEMA.TABLES  where table_type='BASE TABLE'",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
 							"dataset": {
-								"referenceName": "ListTable",
+								"referenceName": "TableList",
 								"type": "DatasetReference",
-								"parameters": {
-									"TableName": {
-										"value": "@pipeline().parameters.TableName",
-										"type": "Expression"
-									},
-									"SchemaName": {
-										"value": "@pipeline().parameters.Schema",
-										"type": "Expression"
-									}
-								}
+								"parameters": {}
 							},
 							"firstRowOnly": false
 						}
 					},
 					{
-						"name": "ForEach1",
+						"name": "For Each Table",
 						"type": "ForEach",
 						"dependsOn": [
 							{
-								"activity": "Lookup1",
+								"activity": "List Tables",
 								"dependencyConditions": [
 									"Completed"
 								]
@@ -286,12 +265,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@activity('Lookup1').output.value",
+								"value": "@activity('List Tables').output.value",
 								"type": "Expression"
 							},
 							"activities": [
 								{
-									"name": "Export Data",
+									"name": "Export Table",
 									"type": "Copy",
 									"dependsOn": [],
 									"policy": {
@@ -331,7 +310,7 @@
 									},
 									"inputs": [
 										{
-											"referenceName": "ListTable",
+											"referenceName": "SQLTable",
 											"type": "DatasetReference",
 											"parameters": {
 												"TableName": {
@@ -351,7 +330,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"filename": {
-													"value": "@concat(item().table_schema,'-',item().table_name,'.csv')",
+													"value": "@concat(item().table_schema,'-',item().TableName,'.csv')",
 													"type": "Expression"
 												}
 											}
@@ -365,18 +344,11 @@
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
-				"parameters": {
-					"TableName": {
-						"type": "string"
-					},
-					"Schema": {
-						"type": "string"
-					}
-				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ListTable')]",
+				"[concat(variables('factoryId'), '/datasets/TableList')]",
+				"[concat(variables('factoryId'), '/datasets/SQLTable')]",
 				"[concat(variables('factoryId'), '/datasets/CSVTable')]"
 			]
 		},
@@ -1313,7 +1285,11 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"folderPath": "dump",
+						"fileName": {
+							"value": "@dataset().filename",
+							"type": "Expression"
+						},
+						"folderPath": "Test",
 						"container": "datalake"
 					},
 					"columnDelimiter": ",",
@@ -1321,52 +1297,7 @@
 					"firstRowAsHeader": true,
 					"quoteChar": "\""
 				},
-				"schema": [
-					{
-						"name": "OrderId",
-						"type": "String"
-					},
-					{
-						"name": "Product",
-						"type": "String"
-					},
-					{
-						"name": "QuantityOrdered",
-						"type": "String"
-					},
-					{
-						"name": "PriceEach",
-						"type": "String"
-					},
-					{
-						"name": "OrderDate",
-						"type": "String"
-					},
-					{
-						"name": "Address",
-						"type": "String"
-					},
-					{
-						"name": "City",
-						"type": "String"
-					},
-					{
-						"name": "State",
-						"type": "String"
-					},
-					{
-						"name": "ZipCode",
-						"type": "String"
-					},
-					{
-						"name": "FileName",
-						"type": "String"
-					},
-					{
-						"name": "LoadDate",
-						"type": "String"
-					}
-				]
+				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
@@ -1483,12 +1414,12 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ListTable')]",
+			"name": "[concat(parameters('factoryName'), '/SQLTable')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "ForSQLTable",
+					"referenceName": "AzureSqlDatabase1",
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
@@ -1514,7 +1445,25 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ForSQLTable')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TableList')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
 			]
 		},
 		{
@@ -1650,6 +1599,19 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage2_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureSqlDataWarehouse')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -1705,28 +1667,6 @@
 					"accountKey": {
 						"type": "SecureString",
 						"value": "[parameters('DataLake_accountKey')]"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ForSQLTable')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"server": "[parameters('ForSQLTable_properties_typeProperties_server')]",
-					"database": "[parameters('ForSQLTable_properties_typeProperties_database')]",
-					"encrypt": "mandatory",
-					"trustServerCertificate": false,
-					"authenticationType": "SQL",
-					"userName": "[parameters('ForSQLTable_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('ForSQLTable_password')]"
 					}
 				}
 			},

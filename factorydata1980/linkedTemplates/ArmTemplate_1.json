@@ -13,6 +13,168 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/GoldSalesOrderFact')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "DataLake",
+								"type": "LinkedServiceReference"
+							},
+							"name": "SourceSilver"
+						},
+						{
+							"linkedService": {
+								"referenceName": "DataLake",
+								"type": "LinkedServiceReference"
+							},
+							"name": "SourceProduct"
+						},
+						{
+							"linkedService": {
+								"referenceName": "DataLake",
+								"type": "LinkedServiceReference"
+							},
+							"name": "SourceFile"
+						},
+						{
+							"linkedService": {
+								"referenceName": "DataLake",
+								"type": "LinkedServiceReference"
+							},
+							"name": "SourcePurchaseAddress"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "DataLake",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkToGold"
+						}
+					],
+					"transformations": [
+						{
+							"name": "joinProduct"
+						},
+						{
+							"name": "joinSourceFile"
+						},
+						{
+							"name": "joinPurchaseAddress"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          OrderID as integer,",
+						"          Product as string,",
+						"          QuantityOrdered as string,",
+						"          PriceEach as float,",
+						"          OrderDate as timestamp,",
+						"          PurchaseAddress as string,",
+						"          PurchaseCity as string,",
+						"          State as string,",
+						"          ZipCode as string,",
+						"          LoadDate as date,",
+						"          FileName as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet',",
+						"     fileSystem: 'datalake',",
+						"     wildcardPaths:['Silver/ProductDatabase']) ~> SourceSilver",
+						"source(output(",
+						"          Product as string,",
+						"          PriceEach as float,",
+						"          ProductID as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet',",
+						"     fileSystem: 'datalake',",
+						"     wildcardPaths:['Gold/ProductToDatabase/Product/Product.parquet']) ~> SourceProduct",
+						"source(output(",
+						"          FileName as string,",
+						"          LoadDate as date,",
+						"          FileSourceID as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet',",
+						"     fileSystem: 'datalake',",
+						"     wildcardPaths:['Gold/ProductToDatabase/FileSource']) ~> SourceFile",
+						"source(output(",
+						"          PurchaseAddress as string,",
+						"          PurchaseCity as string,",
+						"          State as string,",
+						"          ZipCode as string,",
+						"          PurchaseAddressID as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet',",
+						"     fileSystem: 'datalake',",
+						"     wildcardPaths:['Gold/ProductToDatabase/PurchaseAddress']) ~> SourcePurchaseAddress",
+						"SourceSilver, SourceProduct join(SourceSilver@Product == SourceProduct@Product,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinProduct",
+						"joinProduct, SourceFile join(SourceSilver@LoadDate == SourceFile@LoadDate",
+						"     && SourceSilver@FileName == SourceFile@FileName,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinSourceFile",
+						"joinSourceFile, SourcePurchaseAddress join(SourceSilver@PurchaseAddress == SourcePurchaseAddress@PurchaseAddress",
+						"     && SourceSilver@PurchaseCity == SourcePurchaseAddress@PurchaseCity",
+						"     && SourceSilver@State == SourcePurchaseAddress@State",
+						"     && SourceSilver@ZipCode == SourcePurchaseAddress@ZipCode,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinPurchaseAddress",
+						"joinPurchaseAddress select(mapColumn(",
+						"          OrderID,",
+						"          ProductID,",
+						"          OrderDate,",
+						"          QuantityOrdered,",
+						"          FileSourceID,",
+						"          PurchaseAddressID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     fileSystem: 'datalake',",
+						"     folderPath: 'Gold/ProductToDatabase/SalesOrderFact',",
+						"     truncate: true,",
+						"     partitionFileNames:['SalesOrderFact.parquet'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkToGold"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ProductDatabaseToBronze')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -444,7 +606,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Lookup1",
+						"name": "List Tables",
 						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
@@ -458,33 +620,24 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "select *\nfrom Datawarehouse.information_schema.tables\nwhere table_type='Base Table'",
+								"sqlReaderQuery": "select *\nfrom DataWarehouse.INFORMATION_SCHEMA.TABLES  where table_type='BASE TABLE'",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
 							"dataset": {
-								"referenceName": "ListTable",
+								"referenceName": "TableList",
 								"type": "DatasetReference",
-								"parameters": {
-									"TableName": {
-										"value": "@pipeline().parameters.TableName",
-										"type": "Expression"
-									},
-									"SchemaName": {
-										"value": "@pipeline().parameters.Schema",
-										"type": "Expression"
-									}
-								}
+								"parameters": {}
 							},
 							"firstRowOnly": false
 						}
 					},
 					{
-						"name": "ForEach1",
+						"name": "For Each Table",
 						"type": "ForEach",
 						"dependsOn": [
 							{
-								"activity": "Lookup1",
+								"activity": "List Tables",
 								"dependencyConditions": [
 									"Completed"
 								]
@@ -493,12 +646,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@activity('Lookup1').output.value",
+								"value": "@activity('List Tables').output.value",
 								"type": "Expression"
 							},
 							"activities": [
 								{
-									"name": "Export Data",
+									"name": "Export Table",
 									"type": "Copy",
 									"dependsOn": [],
 									"policy": {
@@ -538,7 +691,7 @@
 									},
 									"inputs": [
 										{
-											"referenceName": "ListTable",
+											"referenceName": "SQLTable",
 											"type": "DatasetReference",
 											"parameters": {
 												"TableName": {
@@ -558,7 +711,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"filename": {
-													"value": "@concat(item().table_schema,'-',item().table_name,'.csv')",
+													"value": "@concat(item().table_schema,'-',item().TableName,'.csv')",
 													"type": "Expression"
 												}
 											}
@@ -571,14 +724,6 @@
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"TableName": {
-						"type": "string"
-					},
-					"Schema": {
-						"type": "string"
-					}
 				},
 				"annotations": []
 			},
@@ -1624,7 +1769,8 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/ToGoldFileSource')]",
 				"[concat(variables('factoryId'), '/pipelines/ToGoldProduct')]",
-				"[concat(variables('factoryId'), '/pipelines/ToGoldPurchaseAddress')]"
+				"[concat(variables('factoryId'), '/pipelines/ToGoldPurchaseAddress')]",
+				"[concat(variables('factoryId'), '/dataflows/GoldSalesOrderFact')]"
 			]
 		},
 		{
@@ -1673,54 +1819,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/SCD2')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SCD2_V2')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "SCD2",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "SCD2_copy1",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"Target": {},
-									"Insert": {},
-									"Update": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/SCD2_copy1')]"
 			]
 		}
 	]

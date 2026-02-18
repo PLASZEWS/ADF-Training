@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
 		},
+		"AzureBlobStorage2_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage2'"
+		},
 		"AzureSqlDataWarehouse_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDataWarehouse'"
@@ -22,10 +26,6 @@
 		"DataLake_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'DataLake'"
-		},
-		"ForSQLTable_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'ForSQLTable'"
 		},
 		"InputBlob_connectionString": {
 			"type": "secureString",
@@ -67,18 +67,6 @@
 			"type": "string",
 			"defaultValue": "https://storageaccountkaw1.dfs.core.windows.net/"
 		},
-		"ForSQLTable_properties_typeProperties_server": {
-			"type": "string",
-			"defaultValue": "kawdb1.database.windows.net"
-		},
-		"ForSQLTable_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "DataWarehouse"
-		},
-		"ForSQLTable_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "AdminPL"
-		},
 		"OutputDatabase_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "kawdb1.database.windows.net"
@@ -109,6 +97,19 @@
 				"type": "AzureBlobStorage",
 				"typeProperties": {
 					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage2_connectionString')]"
 				}
 			},
 			"dependsOn": []
@@ -169,28 +170,6 @@
 					"accountKey": {
 						"type": "SecureString",
 						"value": "[parameters('DataLake_accountKey')]"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ForSQLTable')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"server": "[parameters('ForSQLTable_properties_typeProperties_server')]",
-					"database": "[parameters('ForSQLTable_properties_typeProperties_database')]",
-					"encrypt": "mandatory",
-					"trustServerCertificate": false,
-					"authenticationType": "SQL",
-					"userName": "[parameters('ForSQLTable_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('ForSQLTable_password')]"
 					}
 				}
 			},
@@ -491,7 +470,11 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"folderPath": "dump",
+						"fileName": {
+							"value": "@dataset().filename",
+							"type": "Expression"
+						},
+						"folderPath": "Test",
 						"container": "datalake"
 					},
 					"columnDelimiter": ",",
@@ -499,52 +482,7 @@
 					"firstRowAsHeader": true,
 					"quoteChar": "\""
 				},
-				"schema": [
-					{
-						"name": "OrderId",
-						"type": "String"
-					},
-					{
-						"name": "Product",
-						"type": "String"
-					},
-					{
-						"name": "QuantityOrdered",
-						"type": "String"
-					},
-					{
-						"name": "PriceEach",
-						"type": "String"
-					},
-					{
-						"name": "OrderDate",
-						"type": "String"
-					},
-					{
-						"name": "Address",
-						"type": "String"
-					},
-					{
-						"name": "City",
-						"type": "String"
-					},
-					{
-						"name": "State",
-						"type": "String"
-					},
-					{
-						"name": "ZipCode",
-						"type": "String"
-					},
-					{
-						"name": "FileName",
-						"type": "String"
-					},
-					{
-						"name": "LoadDate",
-						"type": "String"
-					}
-				]
+				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
@@ -661,12 +599,12 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ListTable')]",
+			"name": "[concat(parameters('factoryName'), '/SQLTable')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "ForSQLTable",
+					"referenceName": "AzureSqlDatabase1",
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
@@ -692,7 +630,25 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ForSQLTable')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TableList')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
 			]
 		},
 		{
@@ -812,170 +768,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/storageaccount')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/GoldSalesOrderFact')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "DataLake",
-								"type": "LinkedServiceReference"
-							},
-							"name": "SourceSilver"
-						},
-						{
-							"linkedService": {
-								"referenceName": "DataLake",
-								"type": "LinkedServiceReference"
-							},
-							"name": "SourceProduct"
-						},
-						{
-							"linkedService": {
-								"referenceName": "DataLake",
-								"type": "LinkedServiceReference"
-							},
-							"name": "SourceFile"
-						},
-						{
-							"linkedService": {
-								"referenceName": "DataLake",
-								"type": "LinkedServiceReference"
-							},
-							"name": "SourcePurchaseAddress"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "DataLake",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkToGold"
-						}
-					],
-					"transformations": [
-						{
-							"name": "joinProduct"
-						},
-						{
-							"name": "joinSourceFile"
-						},
-						{
-							"name": "joinPurchaseAddress"
-						},
-						{
-							"name": "select1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          OrderID as integer,",
-						"          Product as string,",
-						"          QuantityOrdered as string,",
-						"          PriceEach as float,",
-						"          OrderDate as timestamp,",
-						"          PurchaseAddress as string,",
-						"          PurchaseCity as string,",
-						"          State as string,",
-						"          ZipCode as string,",
-						"          LoadDate as date,",
-						"          FileName as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'parquet',",
-						"     fileSystem: 'datalake',",
-						"     wildcardPaths:['Silver/ProductDatabase']) ~> SourceSilver",
-						"source(output(",
-						"          Product as string,",
-						"          PriceEach as float,",
-						"          ProductID as long",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'parquet',",
-						"     fileSystem: 'datalake',",
-						"     wildcardPaths:['Gold/ProductToDatabase/Product/Product.parquet']) ~> SourceProduct",
-						"source(output(",
-						"          FileName as string,",
-						"          LoadDate as date,",
-						"          FileSourceID as long",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'parquet',",
-						"     fileSystem: 'datalake',",
-						"     wildcardPaths:['Gold/ProductToDatabase/FileSource']) ~> SourceFile",
-						"source(output(",
-						"          PurchaseAddress as string,",
-						"          PurchaseCity as string,",
-						"          State as string,",
-						"          ZipCode as string,",
-						"          PurchaseAddressID as long",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'parquet',",
-						"     fileSystem: 'datalake',",
-						"     wildcardPaths:['Gold/ProductToDatabase/PurchaseAddress']) ~> SourcePurchaseAddress",
-						"SourceSilver, SourceProduct join(SourceSilver@Product == SourceProduct@Product,",
-						"     joinType:'left',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> joinProduct",
-						"joinProduct, SourceFile join(SourceSilver@LoadDate == SourceFile@LoadDate",
-						"     && SourceSilver@FileName == SourceFile@FileName,",
-						"     joinType:'left',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> joinSourceFile",
-						"joinSourceFile, SourcePurchaseAddress join(SourceSilver@PurchaseAddress == SourcePurchaseAddress@PurchaseAddress",
-						"     && SourceSilver@PurchaseCity == SourcePurchaseAddress@PurchaseCity",
-						"     && SourceSilver@State == SourcePurchaseAddress@State",
-						"     && SourceSilver@ZipCode == SourcePurchaseAddress@ZipCode,",
-						"     joinType:'left',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> joinPurchaseAddress",
-						"joinPurchaseAddress select(mapColumn(",
-						"          OrderID,",
-						"          ProductID,",
-						"          OrderDate,",
-						"          QuantityOrdered,",
-						"          FileSourceID,",
-						"          PurchaseAddressID",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     fileSystem: 'datalake',",
-						"     folderPath: 'Gold/ProductToDatabase/SalesOrderFact',",
-						"     truncate: true,",
-						"     partitionFileNames:['SalesOrderFact.parquet'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkToGold"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DataLake')]"
 			]
 		}
 	]

@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
 		},
+		"AzureBlobStorage2_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage2'"
+		},
 		"AzureSqlDataWarehouse_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDataWarehouse'"
@@ -22,10 +26,6 @@
 		"DataLake_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'DataLake'"
-		},
-		"ForSQLTable_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'ForSQLTable'"
 		},
 		"InputBlob_connectionString": {
 			"type": "secureString",
@@ -66,18 +66,6 @@
 		"DataLake_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://storageaccountkaw1.dfs.core.windows.net/"
-		},
-		"ForSQLTable_properties_typeProperties_server": {
-			"type": "string",
-			"defaultValue": "kawdb1.database.windows.net"
-		},
-		"ForSQLTable_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "DataWarehouse"
-		},
-		"ForSQLTable_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "AdminPL"
 		},
 		"OutputDatabase_properties_typeProperties_server": {
 			"type": "string",
@@ -133,6 +121,9 @@
 					"AzureBlobStorage1_connectionString": {
 						"value": "[parameters('AzureBlobStorage1_connectionString')]"
 					},
+					"AzureBlobStorage2_connectionString": {
+						"value": "[parameters('AzureBlobStorage2_connectionString')]"
+					},
 					"AzureSqlDataWarehouse_password": {
 						"value": "[parameters('AzureSqlDataWarehouse_password')]"
 					},
@@ -141,9 +132,6 @@
 					},
 					"DataLake_accountKey": {
 						"value": "[parameters('DataLake_accountKey')]"
-					},
-					"ForSQLTable_password": {
-						"value": "[parameters('ForSQLTable_password')]"
 					},
 					"InputBlob_connectionString": {
 						"value": "[parameters('InputBlob_connectionString')]"
@@ -174,15 +162,6 @@
 					},
 					"DataLake_properties_typeProperties_url": {
 						"value": "[parameters('DataLake_properties_typeProperties_url')]"
-					},
-					"ForSQLTable_properties_typeProperties_server": {
-						"value": "[parameters('ForSQLTable_properties_typeProperties_server')]"
-					},
-					"ForSQLTable_properties_typeProperties_database": {
-						"value": "[parameters('ForSQLTable_properties_typeProperties_database')]"
-					},
-					"ForSQLTable_properties_typeProperties_userName": {
-						"value": "[parameters('ForSQLTable_properties_typeProperties_userName')]"
 					},
 					"OutputDatabase_properties_typeProperties_server": {
 						"value": "[parameters('OutputDatabase_properties_typeProperties_server')]"
