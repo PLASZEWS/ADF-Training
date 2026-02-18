@@ -13,6 +13,183 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/TableList')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WaterMarkTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDbDemo",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TableName",
+						"type": "varchar"
+					},
+					{
+						"name": "WatermarkValue",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "watermarktable"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data_scr')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDbDemo",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/source_employees')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "storageaccount",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"folder": {
+						"type": "string"
+					},
+					"filename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().filename",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().folder",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/src_employees')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "storageaccount",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "Employee.txt",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "employees",
+							"type": "Expression"
+						},
+						"fileSystem": "datalake"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "emp_id",
+						"type": "String"
+					},
+					{
+						"name": "first_name",
+						"type": "String"
+					},
+					{
+						"name": "last_name",
+						"type": "String"
+					},
+					{
+						"name": "DOB",
+						"type": "String"
+					},
+					{
+						"name": "mobile",
+						"type": "String"
+					},
+					{
+						"name": "gender",
+						"type": "String"
+					},
+					{
+						"name": "address_street",
+						"type": "String"
+					},
+					{
+						"name": "address_city",
+						"type": "String"
+					},
+					{
+						"name": "entry_date",
+						"type": "String"
+					},
+					{
+						"name": "store_id",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/GoldSalesOrderFact')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -727,7 +904,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/TableList')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/IncrementalLoad')]",
@@ -736,8 +915,8 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Sql Test",
-						"type": "Copy",
+						"name": "LkpOldwaterMark",
+						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
@@ -749,36 +928,87 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"modifiedDatetimeStart": {
-										"value": "@pipeline().parameters.startTime",
-										"type": "Expression"
-									},
-									"modifiedDatetimeEnd": {
-										"value": "@pipeline().parameters.endTime",
-										"type": "Expression"
-									},
-									"wildcardFolderPath": "Test",
-									"wildcardFileName": "*.txt",
-									"enablePartitionDiscovery": false
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "WaterMarkTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "LkpNewWaterMarkActivity",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT \n      max([LastModifyTime]) as NewWaterMarkValue\n  FROM [dbo].[data_src]",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "data_scr",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "LkpOldwaterMark",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "LkpNewWaterMarkActivity",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "select * from data_src \nwhere LastModifyTime> '@{activity('LkpOldwaterMark').output.firstRow.WatermarkValue}' and LastModifyTime< '@{activity('LkpNewWaterMarkActivity').output.firstRow.NewWaterMarkValue}'",
+									"type": "Expression"
 								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
 							},
 							"sink": {
 								"type": "DelimitedTextSink",
 								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings",
-									"copyBehavior": "PreserveHierarchy"
+									"type": "AzureBlobStorageWriteSettings"
 								},
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ".new"
+									"fileExtension": ".txt"
 								}
 							},
 							"enableStaging": false,
@@ -793,14 +1023,14 @@
 						},
 						"inputs": [
 							{
-								"referenceName": "AzureDataDelimitedText",
+								"referenceName": "data_scr",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
 						],
 						"outputs": [
 							{
-								"referenceName": "AzureDataDelimitedText",
+								"referenceName": "BlbStore",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
@@ -810,17 +1040,12 @@
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
-				"parameters": {
-					"startTime": {
-						"type": "string"
-					},
-					"endTime": {
-						"type": "string"
-					}
-				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/WaterMarkTable')]",
+				"[concat(variables('factoryId'), '/datasets/data_scr')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Sql Test')]",
@@ -1208,617 +1433,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/ProductToDatabaseToSilver')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SCD2')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "src_employees",
-								"type": "DatasetReference"
-							},
-							"name": "source1"
-						},
-						{
-							"dataset": {
-								"referenceName": "AzureSqlEmployeeDWH",
-								"type": "DatasetReference"
-							},
-							"name": "Target"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "AzureSqlEmployeeDWH",
-								"type": "DatasetReference"
-							},
-							"name": "Insert"
-						},
-						{
-							"dataset": {
-								"referenceName": "AzureSqlEmployeeDWH",
-								"type": "DatasetReference"
-							},
-							"name": "Update"
-						}
-					],
-					"transformations": [
-						{
-							"name": "RenameSomeColumns"
-						},
-						{
-							"name": "lookup1"
-						},
-						{
-							"name": "derivedColumn1"
-						},
-						{
-							"name": "split1"
-						},
-						{
-							"name": "alterRow1"
-						},
-						{
-							"name": "alterRow2"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          emp_id as short,",
-						"          first_name as string,",
-						"          last_name as string,",
-						"          DOB as date,",
-						"          mobile as long,",
-						"          gender as string,",
-						"          address_street as string,",
-						"          address_city as string,",
-						"          entry_date as date,",
-						"          store_id as short",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     inferDriftedColumnTypes: true,",
-						"     ignoreNoFilesFound: false) ~> source1",
-						"source(output(",
-						"          emp_id as integer,",
-						"          emp_last_name as string,",
-						"          city as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     query: 'Select  emp_id,emp_last_name,city\\nfrom dbo.employeeDWH\\n',",
-						"     format: 'query') ~> Target",
-						"source1 select(mapColumn(",
-						"          src_emp_id = emp_id,",
-						"          src_first_name = first_name,",
-						"          src_last_name = last_name,",
-						"          src_DOB = DOB,",
-						"          src_mobile = mobile,",
-						"          src_gender = gender,",
-						"          src_address_street = address_street,",
-						"          src_address_city = address_city,",
-						"          src_entry_date = entry_date,",
-						"          src_store_id = store_id",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> RenameSomeColumns",
-						"RenameSomeColumns, Target lookup(src_emp_id == emp_id,",
-						"     multiple: false,",
-						"     pickup: 'any',",
-						"     broadcast: 'auto')~> lookup1",
-						"lookup1 derive(active = iif(isNull(emp_id), 'I', iif(src_last_name!=emp_last_name || src_address_city!=city,'U','R')),",
-						"          i_end_date = toDate('9999-12-31'),",
-						"          current = currentDate(),",
-						"          u_ef_start_date = src_entry_date,",
-						"          u_ef_end_date = subDays(src_entry_date,1),",
-						"          de_created_date = currentTimestamp()) ~> derivedColumn1",
-						"derivedColumn1 split(active=='I',",
-						"     active=='U',",
-						"     disjoint: false) ~> split1@(cinsert, cupdate)",
-						"split1@cinsert alterRow(insertIf(active=='I'||active=='U')) ~> alterRow1",
-						"split1@cupdate alterRow(updateIf(active=='U')) ~> alterRow2",
-						"alterRow1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          emp_key as integer,",
-						"          emp_id as integer,",
-						"          emp_first_name as string,",
-						"          emp_last_name as string,",
-						"          DOB as date,",
-						"          mobile as string,",
-						"          gender as string,",
-						"          address as string,",
-						"          city as string,",
-						"          created_date as date,",
-						"          ef_start_date as date,",
-						"          ef_end_date as date",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 2,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          emp_id = src_emp_id,",
-						"          emp_first_name = src_first_name,",
-						"          emp_last_name = src_last_name,",
-						"          DOB = src_DOB,",
-						"          mobile = src_mobile,",
-						"          gender = src_gender,",
-						"          address = src_address_street,",
-						"          city = src_address_city,",
-						"          created_date = current,",
-						"          ef_start_date = src_entry_date,",
-						"          ef_end_date = i_end_date",
-						"     )) ~> Insert",
-						"alterRow2 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          emp_key as integer,",
-						"          emp_id as integer,",
-						"          emp_first_name as string,",
-						"          emp_last_name as string,",
-						"          DOB as date,",
-						"          mobile as string,",
-						"          gender as string,",
-						"          address as string,",
-						"          city as string,",
-						"          created_date as date,",
-						"          ef_start_date as date,",
-						"          ef_end_date as date",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:false,",
-						"     updateable:true,",
-						"     upsertable:false,",
-						"     keys:['emp_id'],",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 1,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          emp_id = src_emp_id,",
-						"          ef_end_date = u_ef_end_date",
-						"     )) ~> Update"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SCD2_copy1')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "src_employees",
-								"type": "DatasetReference"
-							},
-							"name": "source1"
-						},
-						{
-							"dataset": {
-								"referenceName": "AzureSqlEmployeeDWH_V2",
-								"type": "DatasetReference"
-							},
-							"name": "Target"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "AzureSqlEmployeeDWH_V2",
-								"type": "DatasetReference"
-							},
-							"name": "Insert"
-						},
-						{
-							"dataset": {
-								"referenceName": "AzureSqlEmployeeDWH_V2",
-								"type": "DatasetReference"
-							},
-							"name": "Update"
-						}
-					],
-					"transformations": [
-						{
-							"name": "RenameSomeColumns"
-						},
-						{
-							"name": "lookup1"
-						},
-						{
-							"name": "derivedColumn1"
-						},
-						{
-							"name": "split1"
-						},
-						{
-							"name": "alterRow1"
-						},
-						{
-							"name": "alterRow2"
-						},
-						{
-							"name": "surrogateKey1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          emp_id as short,",
-						"          first_name as string,",
-						"          last_name as string,",
-						"          DOB as date,",
-						"          mobile as long,",
-						"          gender as string,",
-						"          address_street as string,",
-						"          address_city as string,",
-						"          entry_date as date,",
-						"          store_id as short",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     inferDriftedColumnTypes: true,",
-						"     ignoreNoFilesFound: false) ~> source1",
-						"source(output(",
-						"          emp_key as integer,",
-						"          emp_id as integer,",
-						"          emp_last_name as string,",
-						"          city as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     inferDriftedColumnTypes: true,",
-						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     query: 'Select  emp_key,emp_id,emp_last_name,city\\nfrom dbo.employeeDWH_V2\\n',",
-						"     format: 'query') ~> Target",
-						"source1 select(mapColumn(",
-						"          src_emp_id = emp_id,",
-						"          src_first_name = first_name,",
-						"          src_last_name = last_name,",
-						"          src_DOB = DOB,",
-						"          src_mobile = mobile,",
-						"          src_gender = gender,",
-						"          src_address_street = address_street,",
-						"          src_address_city = address_city,",
-						"          src_entry_date = entry_date,",
-						"          src_store_id = store_id",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> RenameSomeColumns",
-						"RenameSomeColumns, Target lookup(src_emp_id == emp_id,",
-						"     multiple: false,",
-						"     pickup: 'any',",
-						"     broadcast: 'auto')~> lookup1",
-						"lookup1 derive(active = iif(isNull(emp_key), 'I', iif(src_last_name!=emp_last_name || src_address_city!=city,'U','R')),",
-						"          i_end_date = toDate('9999-12-31'),",
-						"          current = currentDate(),",
-						"          u_ef_start_date = src_entry_date,",
-						"          u_ef_end_date = subDays(src_entry_date,1),",
-						"          de_created_date = currentTimestamp()) ~> derivedColumn1",
-						"derivedColumn1 split(active=='I' || active=='U',",
-						"     active=='U',",
-						"     disjoint: true) ~> split1@(cinsert, cupdate)",
-						"split1@cinsert alterRow(insertIf(active=='I'||active=='U')) ~> alterRow1",
-						"split1@cupdate alterRow(updateIf(active=='U')) ~> alterRow2",
-						"alterRow1 keyGenerate(output(emp_key as long),",
-						"     startAt: 1L,",
-						"     stepValue: 1L) ~> surrogateKey1",
-						"surrogateKey1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          emp_key as integer,",
-						"          emp_id as integer,",
-						"          emp_first_name as string,",
-						"          emp_last_name as string,",
-						"          DOB as date,",
-						"          mobile as string,",
-						"          gender as string,",
-						"          address as string,",
-						"          city as string,",
-						"          created_date as timestamp,",
-						"          ef_start_date as date,",
-						"          ef_end_date as date",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 2,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          emp_key,",
-						"          emp_id = src_emp_id,",
-						"          emp_first_name = src_first_name,",
-						"          emp_last_name = src_last_name,",
-						"          DOB = src_DOB,",
-						"          mobile = src_mobile,",
-						"          gender = src_gender,",
-						"          address = src_address_street,",
-						"          city = src_address_city,",
-						"          created_date = current,",
-						"          ef_start_date = src_entry_date,",
-						"          ef_end_date = i_end_date",
-						"     )) ~> Insert",
-						"alterRow2 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          emp_key as integer,",
-						"          emp_id as integer,",
-						"          emp_first_name as string,",
-						"          emp_last_name as string,",
-						"          DOB as date,",
-						"          mobile as string,",
-						"          gender as string,",
-						"          address as string,",
-						"          city as string,",
-						"          created_date as timestamp,",
-						"          ef_start_date as date,",
-						"          ef_end_date as date",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:false,",
-						"     updateable:true,",
-						"     upsertable:false,",
-						"     keys:['emp_key'],",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 1,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          emp_id = src_emp_id,",
-						"          emp_key,",
-						"          ef_end_date = u_ef_end_date",
-						"     )) ~> Update"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "src_employees",
-								"type": "DatasetReference"
-							},
-							"name": "source1"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "DelimitedText3",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [],
-					"scriptLines": [
-						"source(output(",
-						"          emp_id as string,",
-						"          first_name as string,",
-						"          last_name as string,",
-						"          DOB as string,",
-						"          mobile as string,",
-						"          gender as string,",
-						"          address_street as string,",
-						"          address_city as string,",
-						"          entry_date as string,",
-						"          store_id as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     inferDriftedColumnTypes: true,",
-						"     ignoreNoFilesFound: false) ~> source1",
-						"source1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AllParts')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "ToGoldFileSource",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "ToGoldFileSource",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "ToGoldProduct",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "ToGoldProduct",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "ToGoldPurchaseAddress",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "ToGoldPurchaseAddress",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "GoldSalesOrder_Fact",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "ToGoldFileSource",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "ToGoldProduct",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "ToGoldPurchaseAddress",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "GoldSalesOrderFact",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"SourceSilver": {},
-									"SourceProduct": {},
-									"SourceFile": {},
-									"SourcePurchaseAddress": {},
-									"sinkToGold": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/ToGoldFileSource')]",
-				"[concat(variables('factoryId'), '/pipelines/ToGoldProduct')]",
-				"[concat(variables('factoryId'), '/pipelines/ToGoldPurchaseAddress')]",
-				"[concat(variables('factoryId'), '/dataflows/GoldSalesOrderFact')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SCD2')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "SCD2",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "SCD2",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"Target": {},
-									"Insert": {},
-									"Update": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 32,
-								"computeType": "MemoryOptimized"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/SCD2')]"
 			]
 		}
 	]

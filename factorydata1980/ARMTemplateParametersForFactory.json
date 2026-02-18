@@ -11,10 +11,16 @@
 		"AzureBlobStorage2_connectionString": {
 			"value": ""
 		},
+		"AzureBlobStr_connectionString": {
+			"value": ""
+		},
 		"AzureSqlDataWarehouse_password": {
 			"value": ""
 		},
 		"AzureSqlDatabase1_password": {
+			"value": ""
+		},
+		"AzureSqlDbDemo_password": {
 			"value": ""
 		},
 		"DataLake_accountKey": {
@@ -45,6 +51,15 @@
 			"value": "DataWarehouse"
 		},
 		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"value": "AdminPL"
+		},
+		"AzureSqlDbDemo_properties_typeProperties_server": {
+			"value": "kawdb1.database.windows.net"
+		},
+		"AzureSqlDbDemo_properties_typeProperties_database": {
+			"value": "DataWarehouse"
+		},
+		"AzureSqlDbDemo_properties_typeProperties_userName": {
 			"value": "AdminPL"
 		},
 		"DataLake_properties_typeProperties_url": {

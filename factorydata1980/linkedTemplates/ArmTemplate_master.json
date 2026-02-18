@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage2'"
 		},
+		"AzureBlobStr_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStr'"
+		},
 		"AzureSqlDataWarehouse_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDataWarehouse'"
@@ -22,6 +26,10 @@
 		"AzureSqlDatabase1_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDatabase1'"
+		},
+		"AzureSqlDbDemo_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'AzureSqlDbDemo'"
 		},
 		"DataLake_accountKey": {
 			"type": "secureString",
@@ -60,6 +68,18 @@
 			"defaultValue": "DataWarehouse"
 		},
 		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "AdminPL"
+		},
+		"AzureSqlDbDemo_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "kawdb1.database.windows.net"
+		},
+		"AzureSqlDbDemo_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DataWarehouse"
+		},
+		"AzureSqlDbDemo_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "AdminPL"
 		},
@@ -124,11 +144,17 @@
 					"AzureBlobStorage2_connectionString": {
 						"value": "[parameters('AzureBlobStorage2_connectionString')]"
 					},
+					"AzureBlobStr_connectionString": {
+						"value": "[parameters('AzureBlobStr_connectionString')]"
+					},
 					"AzureSqlDataWarehouse_password": {
 						"value": "[parameters('AzureSqlDataWarehouse_password')]"
 					},
 					"AzureSqlDatabase1_password": {
 						"value": "[parameters('AzureSqlDatabase1_password')]"
+					},
+					"AzureSqlDbDemo_password": {
+						"value": "[parameters('AzureSqlDbDemo_password')]"
 					},
 					"DataLake_accountKey": {
 						"value": "[parameters('DataLake_accountKey')]"
@@ -159,6 +185,15 @@
 					},
 					"AzureSqlDatabase1_properties_typeProperties_userName": {
 						"value": "[parameters('AzureSqlDatabase1_properties_typeProperties_userName')]"
+					},
+					"AzureSqlDbDemo_properties_typeProperties_server": {
+						"value": "[parameters('AzureSqlDbDemo_properties_typeProperties_server')]"
+					},
+					"AzureSqlDbDemo_properties_typeProperties_database": {
+						"value": "[parameters('AzureSqlDbDemo_properties_typeProperties_database')]"
+					},
+					"AzureSqlDbDemo_properties_typeProperties_userName": {
+						"value": "[parameters('AzureSqlDbDemo_properties_typeProperties_userName')]"
 					},
 					"DataLake_properties_typeProperties_url": {
 						"value": "[parameters('DataLake_properties_typeProperties_url')]"
