@@ -103,6 +103,14 @@
 			"type": "string",
 			"defaultValue": "https://storageaccountkaw1.dfs.core.windows.net/"
 		},
+		"trigger1_properties_copy_pipeline_tumbling_parameters_starttime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowstarttime"
+		},
+		"trigger1_properties_copy_pipeline_tumbling_parameters_endtime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowendtime"
+		},
 		"tumbling_trigger_properties_pipeline_parameters_startTime": {
 			"type": "string",
 			"defaultValue": "@trigger().outputs.windowStartTime"
@@ -247,6 +255,12 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"trigger1_properties_copy_pipeline_tumbling_parameters_starttime": {
+						"value": "[parameters('trigger1_properties_copy_pipeline_tumbling_parameters_starttime')]"
+					},
+					"trigger1_properties_copy_pipeline_tumbling_parameters_endtime": {
+						"value": "[parameters('trigger1_properties_copy_pipeline_tumbling_parameters_endtime')]"
 					},
 					"tumbling_trigger_properties_pipeline_parameters_startTime": {
 						"value": "[parameters('tumbling_trigger_properties_pipeline_parameters_startTime')]"

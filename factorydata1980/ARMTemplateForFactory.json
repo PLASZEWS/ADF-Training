@@ -103,6 +103,14 @@
 			"type": "string",
 			"defaultValue": "https://storageaccountkaw1.dfs.core.windows.net/"
 		},
+		"trigger1_properties_copy_pipeline_tumbling_parameters_starttime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowstarttime"
+		},
+		"trigger1_properties_copy_pipeline_tumbling_parameters_endtime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowendtime"
+		},
 		"tumbling_trigger_properties_pipeline_parameters_startTime": {
 			"type": "string",
 			"defaultValue": "@trigger().outputs.windowStartTime"
@@ -791,12 +799,15 @@
 								}
 							},
 							"sink": {
-								"type": "AzureSqlSink",
-								"preCopyScript": "delete from dbo.testfile",
-								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false,
-								"tableOption": "autoCreate",
-								"disableMetricsCollection": false
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
 							},
 							"enableStaging": false,
 							"translator": {
@@ -817,7 +828,7 @@
 						],
 						"outputs": [
 							{
-								"referenceName": "AzureSqlDatabaseTable",
+								"referenceName": "DestDelimFile",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
@@ -839,7 +850,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/AzureDataDelimitedText')]",
-				"[concat(variables('factoryId'), '/datasets/AzureSqlDatabaseTable')]"
+				"[concat(variables('factoryId'), '/datasets/DestDelimFile')]"
 			]
 		},
 		{
@@ -1152,6 +1163,100 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/copy_pipeline_tumbling')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy tumbling",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"modifiedDatetimeStart": {
+										"value": "@pipeline().parameters.starttime",
+										"type": "Expression"
+									},
+									"modifiedDatetimeEnd": {
+										"value": "@pipeline().parameters.endtime",
+										"type": "Expression"
+									},
+									"wildcardFileName": "*.txt",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureDataDelimitedText",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DelimDest",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"starttime": {
+						"type": "string"
+					},
+					"endtime": {
+						"type": "string"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/AzureDataDelimitedText')]",
+				"[concat(variables('factoryId'), '/datasets/DelimDest')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureDataDelimitedText')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1445,6 +1550,34 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DelimDest')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DataLake",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "dest_tumbling",
+						"fileSystem": "datalake"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DataLake')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DelimitedText1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1552,6 +1685,34 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/storageaccount')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestDelimFile')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DataLake",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "dest_tumbling",
+						"fileSystem": "datalake"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DataLake')]"
 			]
 		},
 		{
@@ -1951,12 +2112,45 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/tumbling_trigger')]",
+			"name": "[concat(parameters('factoryName'), '/trigger1')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
 				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "copy_pipeline_tumbling",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"starttime": "[parameters('trigger1_properties_copy_pipeline_tumbling_parameters_starttime')]",
+							"endtime": "[parameters('trigger1_properties_copy_pipeline_tumbling_parameters_endtime')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2026-02-19T05:59:00",
+						"timeZone": "Central European Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/copy_pipeline_tumbling')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tumbling_trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
 				"pipeline": {
 					"pipelineReference": {
 						"referenceName": "Sql Test",
