@@ -71,6 +71,10 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
+								"dataflow": {
+									"referenceName": "SCD2_copy1",
+									"type": "DataFlowReference"
+								},
 								"compute": {
 									"coreCount": 8,
 									"computeType": "General"
