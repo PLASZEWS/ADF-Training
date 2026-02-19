@@ -501,9 +501,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> RenameSomeColumns",
 						"RenameSomeColumns, Target lookup(src_emp_id == emp_id,",
-						"     multiple: false,",
-						"     pickup: 'any',",
-						"     broadcast: 'auto')~> lookup1",
+						"     multiple: true,",
+						"     broadcast: 'auto',",
+						"     pickup: 'any')~> lookup1",
 						"lookup1 derive(active = iif(isNull(emp_key), 'I', iif(src_last_name!=emp_last_name || src_address_city!=city,'U','R')),",
 						"          i_end_date = toDate('9999-12-31'),",
 						"          current = currentDate(),",
@@ -587,61 +587,6 @@
 						"          emp_key,",
 						"          ef_end_date = u_ef_end_date",
 						"     )) ~> Update"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "src_employees",
-								"type": "DatasetReference"
-							},
-							"name": "source1"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "DelimitedText3",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [],
-					"scriptLines": [
-						"source(output(",
-						"          emp_id as string,",
-						"          first_name as string,",
-						"          last_name as string,",
-						"          DOB as string,",
-						"          mobile as string,",
-						"          gender as string,",
-						"          address_street as string,",
-						"          address_city as string,",
-						"          entry_date as string,",
-						"          store_id as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     inferDriftedColumnTypes: true,",
-						"     ignoreNoFilesFound: false) ~> source1",
-						"source1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sink1"
 					]
 				}
 			},
@@ -938,12 +883,14 @@
 									"userProperties": [],
 									"typeProperties": {
 										"dataflow": {
-											"referenceName": "dataflow1",
+											"referenceName": "SCD2_copy1",
 											"type": "DataFlowReference",
 											"parameters": {},
 											"datasetParameters": {
 												"source1": {},
-												"sink1": {}
+												"Target": {},
+												"Insert": {},
+												"Update": {}
 											}
 										},
 										"staging": {},
@@ -964,7 +911,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
+				"[concat(variables('factoryId'), '/dataflows/SCD2_copy1')]"
 			]
 		},
 		{
