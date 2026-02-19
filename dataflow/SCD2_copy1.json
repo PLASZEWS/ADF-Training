@@ -145,7 +145,6 @@
 				"     saveOrder: 2,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          emp_key,",
 				"          emp_id = src_emp_id,",
 				"          emp_first_name = src_first_name,",
 				"          emp_last_name = src_last_name,",
