@@ -10,8 +10,8 @@
 					"type": "PipelineReference"
 				},
 				"parameters": {
-					"starttime": "@trigger().outputs.windowstarttime",
-					"endtime": "@trigger().outputs.windowendtime"
+					"starttime": "@trigger().output.windowstarttime",
+					"endtime": "@trigger().output.windowendtime"
 				}
 			}
 		],
