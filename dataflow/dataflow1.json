@@ -3,36 +3,11 @@
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [
-				{
-					"dataset": {
-						"referenceName": "AzureSqlEmployeeDWH_V2",
-						"type": "DatasetReference"
-					},
-					"name": "source1"
-				}
-			],
+			"sources": [],
 			"sinks": [],
 			"transformations": [],
 			"scriptLines": [
-				"source(output(",
-				"          emp_key as integer,",
-				"          emp_id as integer,",
-				"          emp_first_name as string,",
-				"          emp_last_name as string,",
-				"          DOB as date,",
-				"          mobile as string,",
-				"          gender as string,",
-				"          address as string,",
-				"          city as string,",
-				"          created_date as timestamp,",
-				"          ef_start_date as date,",
-				"          ef_end_date as date",
-				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> source1"
+				""
 			]
 		}
 	}
