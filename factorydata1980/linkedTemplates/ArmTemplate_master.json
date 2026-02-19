@@ -105,11 +105,11 @@
 		},
 		"trigger1_properties_copy_pipeline_tumbling_parameters_starttime": {
 			"type": "string",
-			"defaultValue": "@trigger().outputs.windowstarttime"
+			"defaultValue": "@trigger().output.windowstarttime"
 		},
 		"trigger1_properties_copy_pipeline_tumbling_parameters_endtime": {
 			"type": "string",
-			"defaultValue": "@trigger().outputs.windowendtime"
+			"defaultValue": "@trigger().output.windowendtime"
 		},
 		"tumbling_trigger_properties_pipeline_parameters_startTime": {
 			"type": "string",

@@ -9,11 +9,11 @@
 		},
 		"trigger1_properties_copy_pipeline_tumbling_parameters_starttime": {
 			"type": "string",
-			"defaultValue": "@trigger().outputs.windowstarttime"
+			"defaultValue": "@trigger().output.windowstarttime"
 		},
 		"trigger1_properties_copy_pipeline_tumbling_parameters_endtime": {
 			"type": "string",
-			"defaultValue": "@trigger().outputs.windowendtime"
+			"defaultValue": "@trigger().output.windowendtime"
 		},
 		"tumbling_trigger_properties_pipeline_parameters_startTime": {
 			"type": "string",
@@ -544,7 +544,6 @@
 						"     saveOrder: 2,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
-						"          emp_key,",
 						"          emp_id = src_emp_id,",
 						"          emp_first_name = src_first_name,",
 						"          emp_last_name = src_last_name,",
