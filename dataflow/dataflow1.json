@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "src_employees",
+						"referenceName": "AzureSqlEmployeeDWH_V2",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -14,36 +14,31 @@
 			],
 			"sinks": [
 				{
-					"dataset": {
-						"referenceName": "DelimitedText3",
-						"type": "DatasetReference"
-					},
 					"name": "sink1"
 				}
 			],
 			"transformations": [],
 			"scriptLines": [
 				"source(output(",
-				"          emp_id as string,",
-				"          first_name as string,",
-				"          last_name as string,",
-				"          DOB as string,",
+				"          emp_key as integer,",
+				"          emp_id as integer,",
+				"          emp_first_name as string,",
+				"          emp_last_name as string,",
+				"          DOB as date,",
 				"          mobile as string,",
 				"          gender as string,",
-				"          address_street as string,",
-				"          address_city as string,",
-				"          entry_date as string,",
-				"          store_id as string",
+				"          address as string,",
+				"          city as string,",
+				"          created_date as timestamp,",
+				"          ef_start_date as date,",
+				"          ef_end_date as date",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     inferDriftedColumnTypes: true,",
-				"     ignoreNoFilesFound: false) ~> source1",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     umask: 0022,",
-				"     preCommands: [],",
-				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> sink1"
 			]
